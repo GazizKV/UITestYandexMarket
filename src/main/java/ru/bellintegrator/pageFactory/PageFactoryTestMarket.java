@@ -12,6 +12,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * @author valit
@@ -20,6 +22,11 @@ import java.util.List;
  */
 
 public class PageFactoryTestMarket {
+
+    /**
+     * Логгер
+     */
+    Logger logger = Logger.getLogger(PageFactoryTestMarket.class.getName());
 
     /**
      * Драйвер браузера
@@ -83,7 +90,7 @@ public class PageFactoryTestMarket {
     /**
      * Элемент DOM text() = "Показывать по 'number'" показывает действительное значение эелемента
      */
-    @FindBy(how = How.XPATH, using = "//button[@aria-haspopup='true']")
+    @FindBy(how = How.XPATH, using = "//button[@aria-haspopup='true']/..")
     private WebElement currentPagination;
 
     /**
@@ -97,6 +104,12 @@ public class PageFactoryTestMarket {
      */
     @FindBy(how = How.XPATH, using = "//button[text()='Показывать по 48']")
     private WebElement pagination48;
+
+    /**
+     * Элемент DOM поле результатов поиска
+     */
+    @FindBy(how = How.XPATH, using = "//div[@data-zone-name='snippetList']")
+    private WebElement searchResultField;
 
     /**
      * Список эелементов результата поиска
@@ -151,30 +164,46 @@ public class PageFactoryTestMarket {
      * клик по кнопке каталог
      */
     public void clickCatalog() {
+        logger.info("Click 'Каталог'");
         catalog.click();
         webDriverWait.until(ExpectedConditions.visibilityOfAllElements(computers));
     }
 
+    /**
+     * Навередение на элемент меню каталога "Компьютеры"
+     */
     public void hoverMenuComputers() {
+        logger.info("Hover 'компьютеры'");
         Actions actions = new Actions(webDriver);
         actions.moveToElement(computers).build().perform();
         webDriverWait.until(ExpectedConditions.visibilityOfAllElements(lapTops));
     }
 
+    /**
+     * Клик на элемент меню компьютеры "Ноутбуки"
+     */
     public void clickLapTops() {
+        logger.info("Click ноутбуки");
         Actions actions = new Actions(webDriver);
         actions.click(lapTops).build().perform();
     }
 
+    /**
+     * Выставление цен от "From" до "To"
+     */
     public void setCosts(int from, int to) {
-        costFrom.click();
-        costFrom.sendKeys("10000");
-        costTo.click();
-        costTo.sendKeys("900000");
+        logger.info("Set costs");
+        costFrom.sendKeys(String.valueOf(from));
+        costTo.sendKeys(String.valueOf(to));
     }
 
+    /**
+     * Показать полный список производителей
+     */
     public void showAllProducer() {
-        producerShowAll.click();
+        logger.info("Show all producer");
+        Actions actions = new Actions(webDriver);
+        actions.click(producerShowAll);
         webDriverWait.until(
                 ExpectedConditions
                         .visibilityOfElementLocated
@@ -182,7 +211,11 @@ public class PageFactoryTestMarket {
         );
     }
 
+    /**
+     * Отметить выбрано checkBox checked для списка stringsProducer
+     */
     public void setProducers(List<String> stringsProducer) {
+        logger.info("Set producers");
         Actions actions = new Actions(webDriver);
         stringsProducer.forEach(producer -> {
             for (int i = 0; i < producersList.size(); i++) {
@@ -191,31 +224,22 @@ public class PageFactoryTestMarket {
                             .moveToElement(producersList.get(i))
                             .click(producersList.get(i))
                             .build().perform();
+                    webDriverWait.until(ExpectedConditions.visibilityOf(searchResultField));
                 }
             }
         });
-
-        webDriverWait.until(ExpectedConditions.numberOfElementsToBeMoreThan(
-                By.xpath("//article[@data-autotest-id='product-snippet']"),
-                12
-        ));
     }
 
+    /**
+     * Выставить пагинацию с 48 на 12
+     */
     public void setTwelve() {
+        webDriver.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS);
         Actions actions = new Actions(webDriver);
-        actions
-                .moveToElement(currentPagination)
-                .click(currentPagination)
-                .build().perform();
-        currentPagination.click();
-        webDriverWait
-                .until(ExpectedConditions
-                        .attributeContains(
-                                currentPagination,
-                                "aria-expanded",
-                                "true"
-                        ));
+        logger.info("Click " + currentPagination.getText());
+        actions.click(currentPagination).build().perform();
         actions.click(pagination12).build().perform();
+        logger.info("Waiting for set search result to 12 ");
         webDriverWait
                 .until(
                         ExpectedConditions.numberOfElementsToBe(
@@ -224,16 +248,27 @@ public class PageFactoryTestMarket {
                         ));
     }
 
-    public int checkTwelve() {
+    /**
+     * Геттер для количества товара показанного на странице в результатах поиска (пагинация)
+     *
+     * @return int колечество товаров показанных на странице
+     */
+    public int getSearchResultNumber() {
         return searchResultList.size();
     }
 
+    /**
+     * Сохранение первого элемента в переменную nameOfFirstElement
+     */
     public void saveFirstElement() {
         nameOfFirstElement = searchResultList.get(0).findElement(By.xpath(
                 "//h3/.//span"
         )).getText();
     }
 
+    /**
+     * Поиск товара по названию сохраненного элемента
+     */
     public void sendKeysAndPressButton() {
         Actions actions = new Actions(webDriver);
         actions
@@ -246,7 +281,11 @@ public class PageFactoryTestMarket {
         ));
     }
 
-
+    /**
+     * Проверка результатов поиска на содержание названия нужного элемента
+     *
+     * @return boolean возвращает рузультат проверки в булеан
+     */
     public boolean checkResults() {
         return searchResultList.stream().anyMatch(webElement ->
                 webElement.getText().contains(nameOfFirstElement)

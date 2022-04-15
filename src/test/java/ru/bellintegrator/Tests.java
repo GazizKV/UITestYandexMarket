@@ -37,7 +37,7 @@ public class Tests extends BaseTest {
         pageFactoryTestMarket.setProducers(producers);
         pageFactoryTestMarket.setTwelve();
         Assertions.assertTrue(
-                pageFactoryTestMarket.checkTwelve() == 12,
+                pageFactoryTestMarket.getSearchResultNumber() == 12,
                 "Список резултатов поиска не равен 12"
         );
         pageFactoryTestMarket.saveFirstElement();
