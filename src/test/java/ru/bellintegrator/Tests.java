@@ -18,8 +18,6 @@ import java.util.List;
  * @version 1.0
  */
 public class Tests extends BaseTest {
-
-
     @Feature("Тестирование яндекс маркета")
     @DisplayName("Тестирование параметров поиска Яндекс маркета")
     @ParameterizedTest
@@ -36,10 +34,9 @@ public class Tests extends BaseTest {
         pageFactoryTestMarket.showAllProducer();
         pageFactoryTestMarket.setProducers(producers);
         pageFactoryTestMarket.setTwelve();
-        Assertions.assertTrue(
-                pageFactoryTestMarket.getSearchResultNumber() == 12,
-                "Список резултатов поиска не равен 12"
-        );
+        Assertions.assertEquals(12,
+                pageFactoryTestMarket.getSearchResultNumber(),
+                "Список резултатов поиска не равен 12");
         pageFactoryTestMarket.saveFirstElement();
         pageFactoryTestMarket.sendKeysAndPressButton();
         Assertions.assertTrue(

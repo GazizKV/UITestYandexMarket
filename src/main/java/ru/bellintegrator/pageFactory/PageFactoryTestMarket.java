@@ -12,7 +12,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -32,6 +31,16 @@ public class PageFactoryTestMarket {
      * Драйвер браузера
      */
     private WebDriver webDriver;
+
+    /**
+     * Конструктор PageFactory
+     *
+     * @param webDriver - драйвер браузера
+     */
+    public PageFactoryTestMarket(WebDriver webDriver) {
+        this.webDriver = webDriver;
+        this.webDriverWait = new WebDriverWait(webDriver, 15);
+    }
 
     /**
      * Драйвер ожидания события
@@ -90,7 +99,7 @@ public class PageFactoryTestMarket {
     /**
      * Элемент DOM text() = "Показывать по 'number'" показывает действительное значение эелемента
      */
-    @FindBy(how = How.XPATH, using = "//button[@aria-haspopup='true']/..")
+    @FindBy(how = How.XPATH, using = "//button[@aria-haspopup='true']")
     private WebElement currentPagination;
 
     /**
@@ -135,23 +144,12 @@ public class PageFactoryTestMarket {
     private WebElement searchButton;
 
     /**
-     * Конструктор PageFactory
-     *
-     * @param webDriver - драйвер браузера
-     */
-    public PageFactoryTestMarket(WebDriver webDriver) {
-        this.webDriver = webDriver;
-        this.webDriverWait = new WebDriverWait(webDriver, 15);
-    }
-
-    /**
      * Переход на вкладку яндекс маркета
      *
      * @return boolean по рузультату открытия яндекс маркета
      */
     public boolean switchToYandexMarket() {
         market.click();
-        webDriverWait.until(ExpectedConditions.numberOfWindowsToBe(2));
         List<String> tabsList = new LinkedList<>(webDriver.getWindowHandles());
         if (tabsList.size() > 1) {
             webDriver.switchTo().window(tabsList.get(tabsList.size() - 1));
@@ -166,7 +164,6 @@ public class PageFactoryTestMarket {
     public void clickCatalog() {
         logger.info("Click 'Каталог'");
         catalog.click();
-        webDriverWait.until(ExpectedConditions.visibilityOfAllElements(computers));
     }
 
     /**
@@ -176,7 +173,6 @@ public class PageFactoryTestMarket {
         logger.info("Hover 'компьютеры'");
         Actions actions = new Actions(webDriver);
         actions.moveToElement(computers).build().perform();
-        webDriverWait.until(ExpectedConditions.visibilityOfAllElements(lapTops));
     }
 
     /**
@@ -204,11 +200,7 @@ public class PageFactoryTestMarket {
         logger.info("Show all producer");
         Actions actions = new Actions(webDriver);
         actions.click(producerShowAll);
-        webDriverWait.until(
-                ExpectedConditions
-                        .visibilityOfElementLocated
-                                (By.xpath("//legend[text()='Производитель']/.."))
-        );
+
     }
 
     /**
@@ -224,7 +216,6 @@ public class PageFactoryTestMarket {
                             .moveToElement(producersList.get(i))
                             .click(producersList.get(i))
                             .build().perform();
-                    webDriverWait.until(ExpectedConditions.visibilityOf(searchResultField));
                 }
             }
         });
@@ -234,18 +225,22 @@ public class PageFactoryTestMarket {
      * Выставить пагинацию с 48 на 12
      */
     public void setTwelve() {
-        webDriver.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS);
         Actions actions = new Actions(webDriver);
-        logger.info("Click " + currentPagination.getText());
-        actions.click(currentPagination).build().perform();
-        actions.click(pagination12).build().perform();
-        logger.info("Waiting for set search result to 12 ");
-        webDriverWait
-                .until(
-                        ExpectedConditions.numberOfElementsToBe(
-                                By.xpath("//article[@data-autotest-id='product-snippet']"),
-                                12
-                        ));
+
+        webDriverWait.until(ExpectedConditions.visibilityOf(searchResultField));
+        logger.info("Move to " + currentPagination.getText() + " and click");
+        actions
+                .click(currentPagination)
+                .build().perform();
+
+        logger.info("Move to " + pagination12 + " and click");
+
+        webDriverWait.until(ExpectedConditions.elementToBeClickable(pagination12));
+
+        actions
+                .click(pagination12)
+                .build().perform();
+
     }
 
     /**
@@ -254,6 +249,7 @@ public class PageFactoryTestMarket {
      * @return int колечество товаров показанных на странице
      */
     public int getSearchResultNumber() {
+        logger.info("Возварат количество товаров на странице");
         return searchResultList.size();
     }
 
@@ -261,6 +257,7 @@ public class PageFactoryTestMarket {
      * Сохранение первого элемента в переменную nameOfFirstElement
      */
     public void saveFirstElement() {
+        logger.info("Сохранение первого элемента в переменную nameOfFirstElement");
         nameOfFirstElement = searchResultList.get(0).findElement(By.xpath(
                 "//h3/.//span"
         )).getText();
@@ -270,15 +267,13 @@ public class PageFactoryTestMarket {
      * Поиск товара по названию сохраненного элемента
      */
     public void sendKeysAndPressButton() {
+        logger.info("Поиск товара по названию сохраненного элемента");
         Actions actions = new Actions(webDriver);
         actions
                 .click(inputSearch)
                 .sendKeys(nameOfFirstElement)
                 .build().perform();
         actions.click(searchButton).build().perform();
-        webDriverWait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
-                By.xpath("//article[@data-autotest-id='product-snippet']")
-        ));
     }
 
     /**
@@ -287,6 +282,7 @@ public class PageFactoryTestMarket {
      * @return boolean возвращает рузультат проверки в булеан
      */
     public boolean checkResults() {
+        logger.info("Проверка результатов поиска на содержание названия нужного элемента");
         return searchResultList.stream().anyMatch(webElement ->
                 webElement.getText().contains(nameOfFirstElement)
         );
