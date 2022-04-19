@@ -20,7 +20,7 @@ public class DataProvider {
                 List.of("HP", "Lenovo")
         );
         return Stream.of(
-                Arguments.of("https://www.yandex.ru", 10000, 900000, producers)
+                Arguments.of(10000, 900000, producers)
         );
     }
 }

@@ -17,7 +17,7 @@ public class Waits {
     public static WebDriverWait wait = new WebDriverWait(
             Manager.getCurrentDriver(), Constants.DEFAULT_TIMEOUT
     );
-    private static void sleep(int seconds) {
+    public static void sleep(int seconds) {
         try {
             Thread.sleep(seconds * 1000);
         } catch (InterruptedException e) {
@@ -27,7 +27,7 @@ public class Waits {
     public static void waitUntilElementNotExist(String xpath) {
         int timer = 0;
         for(; timer <= Constants.DEFAULT_TIMEOUT; ++timer) {
-            if (Manager.getCurrentDriver().findElement(By.xpath(xpath)).getSize().height == 0) {
+            if (Manager.getCurrentDriver().findElements(By.xpath(xpath)).size() == 0) {
                 break;
             }
             sleep(1);
@@ -49,6 +49,11 @@ public class Waits {
     public static void waitUntilElementClickable(String xpath) {
         new WebDriverWait(Manager.getCurrentDriver(), Constants.DEFAULT_TIMEOUT).until(
                 ExpectedConditions.elementToBeClickable(By.xpath(xpath))
+        );
+    }
+    public static void waitUntilElementClickable(WebElement element) {
+        new WebDriverWait(Manager.getCurrentDriver(), Constants.DEFAULT_TIMEOUT).until(
+                ExpectedConditions.elementToBeClickable(element)
         );
     }
     public static void waitUntilElementPresents(String xpath) {

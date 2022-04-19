@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.openqa.selenium.support.PageFactory;
-import ru.bellintegrator.pageFactory.PageFactoryTestMarket;
+import ru.bellintegrator.pageFactory.steps.Steps;
 
 import java.util.List;
 
@@ -22,28 +21,26 @@ public class Tests extends BaseTest {
     @DisplayName("Тестирование параметров поиска Яндекс маркета")
     @ParameterizedTest
     @MethodSource("ru.bellintegrator.pageFactory.helpers.DataProvider#provideArguments")
-    public void test(String URL, int from, int to, List<String> producers) {
-        webDriver.get(URL);
-        PageFactoryTestMarket pageFactoryTestMarket =
-                PageFactory.initElements(webDriver, PageFactoryTestMarket.class);
-        pageFactoryTestMarket.switchToYandexMarket();
-        pageFactoryTestMarket.clickCatalog();
-        pageFactoryTestMarket.hoverMenuComputers();
-        pageFactoryTestMarket.clickLapTops();
-        pageFactoryTestMarket.setCosts(from, to);
-        pageFactoryTestMarket.showAllProducer();
-        pageFactoryTestMarket.setProducers(producers);
-        pageFactoryTestMarket.setTwelve();
+    public void test(int from, int to, List<String> producers) {
+        Steps.openBrowserWithYandex();
+        Steps.initPageFactoryTestMarket();
+        Steps.switchToYandexMarket();
+        Steps.clickCatatlog();
+        Steps.hoverMenuComputers();
+        Steps.clickLapTops();
+        Steps.setCosts(from, to);
+        Steps.showAllProducer();
+        Steps.setProducers(producers);
+        Steps.setTwelvePagination();
         Assertions.assertEquals(12,
-                pageFactoryTestMarket.getSearchResultNumber(),
+                Steps.getSearchingSizeResult(),
                 "Список резултатов поиска не равен 12");
-        pageFactoryTestMarket.saveFirstElement();
-        pageFactoryTestMarket.sendKeysAndPressButton();
+        Steps.saveFirstElementName();
+        Steps.sendKeysAndPressButton();
         Assertions.assertTrue(
-                pageFactoryTestMarket.checkResults(),
+                Steps.checkResult(),
                 "Результаты поиска не содержат навания " +
-                        "раннее сохраненного первого элемента из поисковой выдачи" +
-                        "по дефолту"
+                        "раннее сохраненного первого элемента из поисковой выдачи"
         );
 
     }

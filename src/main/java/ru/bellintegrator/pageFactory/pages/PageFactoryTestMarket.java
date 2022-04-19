@@ -1,4 +1,4 @@
-package ru.bellintegrator.pageFactory;
+package ru.bellintegrator.pageFactory.pages;
 
 
 import org.openqa.selenium.By;
@@ -7,8 +7,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import ru.bellintegrator.pageFactory.custom.drivers.Waits;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -99,7 +99,7 @@ public class PageFactoryTestMarket {
     /**
      * Элемент DOM text() = "Показывать по 'number'" показывает действительное значение эелемента
      */
-    @FindBy(how = How.XPATH, using = "//button[@aria-haspopup='true']")
+    @FindBy(how = How.XPATH, using = "//button[contains(@id, 'dropdown-control-')]")
     private WebElement currentPagination;
 
     /**
@@ -164,6 +164,7 @@ public class PageFactoryTestMarket {
     public void clickCatalog() {
         logger.info("Click 'Каталог'");
         catalog.click();
+        Waits.waitUntilElementClickable(computers);
     }
 
     /**
@@ -219,6 +220,7 @@ public class PageFactoryTestMarket {
                 }
             }
         });
+        Waits.sleep(5);
     }
 
     /**
@@ -227,7 +229,9 @@ public class PageFactoryTestMarket {
     public void setTwelve() {
         Actions actions = new Actions(webDriver);
 
-        webDriverWait.until(ExpectedConditions.visibilityOf(searchResultField));
+
+        actions.moveToElement(currentPagination).build().perform();
+
         logger.info("Move to " + currentPagination.getText() + " and click");
         actions
                 .click(currentPagination)
@@ -235,7 +239,7 @@ public class PageFactoryTestMarket {
 
         logger.info("Move to " + pagination12 + " and click");
 
-        webDriverWait.until(ExpectedConditions.elementToBeClickable(pagination12));
+        Waits.waitUntilElementClickable(pagination12);
 
         actions
                 .click(pagination12)
@@ -250,6 +254,7 @@ public class PageFactoryTestMarket {
      */
     public int getSearchResultNumber() {
         logger.info("Возварат количество товаров на странице");
+        Waits.sleep(7);
         return searchResultList.size();
     }
 
@@ -283,6 +288,7 @@ public class PageFactoryTestMarket {
      */
     public boolean checkResults() {
         logger.info("Проверка результатов поиска на содержание названия нужного элемента");
+        Waits.sleep(10);
         return searchResultList.stream().anyMatch(webElement ->
                 webElement.getText().contains(nameOfFirstElement)
         );
